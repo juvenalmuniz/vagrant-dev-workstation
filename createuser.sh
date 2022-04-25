@@ -13,3 +13,4 @@ chown -R $USUARIO:$USUARIO /home/$USUARIO/.ssh
 echo $PUB_KEY >> /home/$USUARIO/.ssh/authorized_keys
 echo $PUB_KEY >> /home/vagrant/.ssh/authorized_keys
 echo "$USUARIO ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/usuario_dev
+ln -s /vagrant_data /home/$USUARIO/data
