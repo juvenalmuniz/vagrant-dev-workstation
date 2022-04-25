@@ -1,0 +1,58 @@
+---
+- name: Preparar a VM
+  hosts: all
+  gather_facts: true
+  become: true
+  vars:
+    nome_usuario: "juvenal.muniz"
+  tasks:
+  - name: criar usuário local
+    user:
+      name: "{{ nome_usuario }}"
+      shell: /bin/bash
+      state: present
+  - name: adicionar o usuário ao sudoers para não precisar digitar a senha
+    community.general.sudoers:
+      name: usuario_dev
+      state: present
+      user: "{{ nome_usuario }}"
+      nopassword: yes
+      commands: ALL 
+  - name: adicionar chave pública para login sem senha no SSH
+    authorized_key:
+      user: "{{ nome_usuario }}"
+      state: present
+      key: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"
+  - name: PPA do PHP
+    apt_repository:
+      repo: "ppa:ondrej/php"
+      state: present
+  - name: instalar pacotes
+    apt:
+      state: present
+      update_cache: yes
+      name:
+      - bash-completion
+      - vim
+      - git
+      - php7.4
+      - php7.4-common
+      - php7.4-mcrypt
+      - php7.4-zip
+      - php7.4-intl
+      - php7.4-mbstring
+      - php7.4-pgsql
+      - apache2
+      - libapache2-mod-php7.4
+      - zip
+      - unzip
+  - name: habilitar módulo rewrite do php
+    apache2_module:
+      name: rewrite
+      state: present
+    notify: restart_apache2
+  handlers:
+  - name: restart_apache2
+    service:
+      name: apache2
+      state: restarted
